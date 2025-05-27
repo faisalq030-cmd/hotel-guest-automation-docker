@@ -24,7 +24,8 @@ DATABASE_ID = "1f095662fbd7805da4d3cefe15d8ba9d"
 RAILWAY_URL = os.getenv("RAILWAY_URL", "http://127.0.0.1:5000")
 
 # ✅ Configure pdfkit to use wkhtmltopdf path (corrected for Docker)
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf="/usr/local/bin/wkhtmltopdf")
+PDFKIT_CONFIG = pdfkit.configuration()
+
 
 GUEST_TEMPLATE = """
 <!DOCTYPE html>
