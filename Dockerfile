@@ -13,10 +13,11 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     libxext6 \
     libjpeg62-turbo \
     libx11-6 \
-    && wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && apt install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && ln -s /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf \
-    && rm wkhtmltox_0.12.6-1.buster_amd64.deb \
+    xz-utils \
+    && wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox-0.12.6_linux-generic-amd64.tar.xz \
+    && tar -xJf wkhtmltox-0.12.6_linux-generic-amd64.tar.xz \
+    && mv wkhtmltox/bin/wkhtmltopdf /usr/local/bin/ \
+    && rm -rf wkhtmltox-0.12.6_linux-generic-amd64.tar.xz wkhtmltox \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
