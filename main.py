@@ -23,9 +23,8 @@ DATABASE_ID = "1f095662fbd7805da4d3cefe15d8ba9d"
 # 🌐 Railway deployment URL fallback
 RAILWAY_URL = os.getenv("RAILWAY_URL", "http://127.0.0.1:5000")
 
-# ✅ Configure pdfkit to use wkhtmltopdf path
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf="/usr/bin/wkhtmltopdf")
-
+# ✅ Configure pdfkit to use wkhtmltopdf path (modified as requested)
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf="/usr/local/bin/wkhtmltopdf")
 
 GUEST_TEMPLATE = """
 <!DOCTYPE html>
@@ -65,7 +64,7 @@ def check_and_update_guests():
                 guest_name = guest_name_prop[0]["text"]["content"]
 
                 checkin = props.get("Check-in Date", {}).get("date", {})
-                checkout = props.get("Check-out Date", {}).get("date", {})
+                checkout = props.get("Check-Out Date", {}).get("date", {})
                 created_time = page.get("created_time", "")
                 created_timestamp = datetime.strptime(created_time, "%Y-%m-%dT%H:%M:%S.%fZ")
                 created_key = created_timestamp.strftime("%Y%m%d%H%M%S")
@@ -124,7 +123,7 @@ def guest_page(guest_name, created_key):
             guest_status = props.get("Guest Status", {}).get("multi_select", [])
             guest_status = ", ".join([s.get("name", "") for s in guest_status]) if guest_status else "N/A"
             checkin = props.get("Check-in Date", {}).get("date", {}).get("start", "N/A")
-            checkout = props.get("Check-out Date", {}).get("date", {}).get("start", "N/A")
+            checkout = props.get("Check-Out Date", {}).get("date", {}).get("start", "N/A")
 
             return render_template_string(
                 GUEST_TEMPLATE,
