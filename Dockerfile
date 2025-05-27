@@ -1,8 +1,8 @@
 # Use Python base image
 FROM python:3.12-slim
 
-# Install wkhtmltopdf dependencies
-RUN apt-get update && apt-get install -y \
+# Install wkhtmltopdf dependencies with safer steps and fix broken installs
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     wget \
     curl \
     gnupg \
@@ -14,9 +14,10 @@ RUN apt-get update && apt-get install -y \
     libjpeg62-turbo \
     libx11-6 \
     && wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && apt install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb \
+    && dpkg -i ./wkhtmltox_0.12.6-1.buster_amd64.deb || apt-get install -f -y \
     && rm wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && apt-get clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
 WORKDIR /app
