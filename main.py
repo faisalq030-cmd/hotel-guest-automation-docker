@@ -6,7 +6,7 @@ from datetime import datetime
 import threading
 import time
 import urllib.parse
-import pdfkit
+from weasyprint import HTML  # ✅ Replaced pdfkit
 
 app = Flask(__name__)
 app.config['STATIC_FOLDER'] = 'static'
@@ -16,16 +16,9 @@ app.config['PDF_FOLDER'] = os.path.join(app.config['STATIC_FOLDER'], 'pdfs')
 os.makedirs(app.config['QR_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PDF_FOLDER'], exist_ok=True)
 
-# Notion API key and database ID (replace with your own)
 notion = Client(auth="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")
 DATABASE_ID = "1f095662fbd7805da4d3cefe15d8ba9d"
-
-# Railway deployment URL fallback
 RAILWAY_URL = os.getenv("RAILWAY_URL", "http://127.0.0.1:5000")
-
-# Configure pdfkit to use the wkhtmltopdf binary installed in Docker
-PDFKIT_PATH = '/usr/local/bin/wkhtmltopdf'  # This is where wkhtmltopdf is installed in the Dockerfile
-PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=PDFKIT_PATH)
 
 GUEST_TEMPLATE = """
 <!DOCTYPE html>
@@ -70,7 +63,6 @@ def check_and_update_guests():
                 created_timestamp = datetime.strptime(created_time, "%Y-%m-%dT%H:%M:%S.%fZ")
                 created_key = created_timestamp.strftime("%Y%m%d%H%M%S")
 
-                # Skip if already processed or no checkout date
                 if props.get("Welcome Page URL", {}).get("url") and props.get("QR Code URL", {}).get("url"):
                     continue
                 if not checkout:
@@ -87,9 +79,29 @@ def check_and_update_guests():
 
                 print(f"✅ Guest '{guest_name}' processed. Page: {guest_url}")
 
-                # Generate PDF using pdfkit and configuration
+                # ✅ Generate PDF using WeasyPrint
+                room_number = props.get("Room Number", {}).get("number", "N/A")
+                room_type = props.get("Room Type", {}).get("select", {}).get("name", "N/A")
+                phone_number = props.get("Guest Phone Number", {}).get("rich_text", [])
+                phone_number = phone_number[0]["text"]["content"] if phone_number else "N/A"
+                guest_status = props.get("Guest Status", {}).get("multi_select", [])
+                guest_status = ", ".join([s.get("name", "") for s in guest_status]) if guest_status else "N/A"
+                checkin_date = checkin.get("start", "N/A")
+                checkout_date = checkout.get("start", "N/A")
+
+                html_content = render_template_string(
+                    GUEST_TEMPLATE,
+                    guest_name=guest_name,
+                    room_number=room_number,
+                    room_type=room_type,
+                    phone_number=phone_number,
+                    guest_status=guest_status,
+                    checkin_date=checkin_date,
+                    checkout_date=checkout_date
+                )
+
                 pdf_path = os.path.join(app.config['PDF_FOLDER'], f"{guest_name}_{created_key}.pdf")
-                pdfkit.from_url(guest_url, pdf_path, configuration=PDFKIT_CONFIG)
+                HTML(string=html_content).write_pdf(pdf_path)  # ✅ WeasyPrint saves PDF
                 print(f"📄 PDF saved: {pdf_path}")
 
         except Exception as e:
