@@ -1,7 +1,0 @@
-﻿services:
-  - type: web
-    name: flask-app
-    env: python
-    buildCommand: ""
-    startCommand: gunicorn main:app
-    plan: free
