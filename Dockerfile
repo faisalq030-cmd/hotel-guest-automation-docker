@@ -1,35 +1,38 @@
-﻿# Use Python slim image
+﻿# Use official Python image
 FROM python:3.10-slim
 
-# Set environment vars to avoid prompts
-ENV DEBIAN_FRONTEND=noninteractive
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-# Install system dependencies and wkhtmltopdf (clean and error-free way)
-RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    xz-utils \
-    fontconfig \
+# Install dependencies for wkhtmltopdf
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    xorg \
+    libssl-dev \
     libxrender1 \
     libxext6 \
-    libx11-6 \
-    libssl-dev \
     libfontconfig1 \
-    && wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && apt-get install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb \
-    && rm wkhtmltox_0.12.6-1.buster_amd64.deb
+    libx11-dev \
+    wget \
+    curl \
+    gnupg \
+    ca-certificates && \
+    curl -sS https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox_0.12.6-1.buster_amd64.deb && \
+    apt install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb && \
+    rm wkhtmltox_0.12.6-1.buster_amd64.deb
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Copy all files
-COPY . .
-
 # Install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose the port (Railway default is 8000 or your own)
-EXPOSE 8000
+# Copy app files
+COPY . .
 
-# Start your app (adjust if needed for FastAPI or Flask)
+# Run the app
 CMD ["python", "main.py"]
