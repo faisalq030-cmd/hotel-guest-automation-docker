@@ -6,7 +6,7 @@ from datetime import datetime
 import threading
 import time
 import urllib.parse
-from weasyprint import HTML  # ✅ Replaced pdfkit
+from xhtml2pdf import pisa  # ✅ Replaced WeasyPrint
 
 app = Flask(__name__)
 app.config['STATIC_FOLDER'] = 'static'
@@ -79,7 +79,7 @@ def check_and_update_guests():
 
                 print(f"✅ Guest '{guest_name}' processed. Page: {guest_url}")
 
-                # ✅ Generate PDF using WeasyPrint
+                # ✅ Generate PDF using xhtml2pdf
                 room_number = props.get("Room Number", {}).get("number", "N/A")
                 room_type = props.get("Room Type", {}).get("select", {}).get("name", "N/A")
                 phone_number = props.get("Guest Phone Number", {}).get("rich_text", [])
@@ -101,7 +101,8 @@ def check_and_update_guests():
                 )
 
                 pdf_path = os.path.join(app.config['PDF_FOLDER'], f"{guest_name}_{created_key}.pdf")
-                HTML(string=html_content).write_pdf(pdf_path)  # ✅ WeasyPrint saves PDF
+                with open(pdf_path, "wb") as f:
+                    pisa.CreatePDF(html_content, dest=f)
                 print(f"📄 PDF saved: {pdf_path}")
 
         except Exception as e:
