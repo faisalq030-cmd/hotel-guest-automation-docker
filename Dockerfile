@@ -1,16 +1,16 @@
-﻿FROM ghcr.io/openlabs/docker-wkhtmltopdf:0.12.6
+﻿FROM minidocks/wkhtmltopdf:0.12
 
-# Install Python
-RUN apt-get update && apt-get install -y python3 python3-pip
+# Install Python and pip
+RUN apk add --no-cache python3 py3-pip
 
-# Set workdir
+# Set working directory
 WORKDIR /app
 
 # Copy requirements and install
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy app
+# Copy your app code
 COPY . .
 
 CMD ["python3", "main.py"]
