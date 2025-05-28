@@ -16,16 +16,16 @@ app.config['PDF_FOLDER'] = os.path.join(app.config['STATIC_FOLDER'], 'pdfs')
 os.makedirs(app.config['QR_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PDF_FOLDER'], exist_ok=True)
 
-# 📌 Replace this with your own Notion API key and database ID
+# Notion API key and database ID (replace with your own)
 notion = Client(auth="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")
 DATABASE_ID = "1f095662fbd7805da4d3cefe15d8ba9d"
 
-# 🌐 Railway deployment URL fallback
+# Railway deployment URL fallback
 RAILWAY_URL = os.getenv("RAILWAY_URL", "http://127.0.0.1:5000")
 
-# ✅ Configure pdfkit to use wkhtmltopdf path (corrected for Docker)
-PDFKIT_CONFIG = pdfkit.configuration()
-
+# Configure pdfkit to use the wkhtmltopdf binary installed in Docker
+PDFKIT_PATH = '/usr/local/bin/wkhtmltopdf'  # This is where wkhtmltopdf is installed in the Dockerfile
+PDFKIT_CONFIG = pdfkit.configuration(wkhtmltopdf=PDFKIT_PATH)
 
 GUEST_TEMPLATE = """
 <!DOCTYPE html>
@@ -87,7 +87,7 @@ def check_and_update_guests():
 
                 print(f"✅ Guest '{guest_name}' processed. Page: {guest_url}")
 
-                # 📄 Generate PDF using PDFKit
+                # Generate PDF using pdfkit and configuration
                 pdf_path = os.path.join(app.config['PDF_FOLDER'], f"{guest_name}_{created_key}.pdf")
                 pdfkit.from_url(guest_url, pdf_path, configuration=PDFKIT_CONFIG)
                 print(f"📄 PDF saved: {pdf_path}")
@@ -146,10 +146,10 @@ def guest_page(guest_name, created_key):
 def static_file(filename):
     return send_from_directory(app.config['STATIC_FOLDER'], filename)
 
-# 🔁 Start background thread when the app is loaded by Gunicorn or Flask
 @app.before_first_request
 def start_background_thread():
     threading.Thread(target=check_and_update_guests, daemon=True).start()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
