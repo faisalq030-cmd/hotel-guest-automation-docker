@@ -1,8 +1,9 @@
 ﻿FROM python:3.10-bullseye
 
-# Install system dependencies
+# Install basic packages
 RUN apt-get update && apt-get install -y \
     wget \
+    unzip \
     xfonts-base \
     xfonts-75dpi \
     fontconfig \
@@ -14,19 +15,20 @@ RUN apt-get update && apt-get install -y \
     libx11-6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install wkhtmltopdf (precompiled binary from official GitHub release)
-RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox_0.12.6-1.buster_amd64.deb && \
-    apt install -y ./wkhtmltox_0.12.6-1.buster_amd64.deb && \
-    rm wkhtmltox_0.12.6-1.buster_amd64.deb
+# Install wkhtmltopdf from official static binary (not .deb)
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.6/wkhtmltox-0.12.6-1-linux-generic-amd64.tar.xz && \
+    tar -xf wkhtmltox-0.12.6-1-linux-generic-amd64.tar.xz && \
+    cp -r wkhtmltox/bin/* /usr/local/bin/ && \
+    rm -rf wkhtmltox*
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install
+# Install Python requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the app
+# Copy app code
 COPY . .
 
 CMD ["python", "main.py"]
