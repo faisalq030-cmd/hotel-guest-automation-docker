@@ -18,7 +18,7 @@ os.makedirs(app.config['PDF_FOLDER'], exist_ok=True)
 
 notion = Client(auth="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")
 DATABASE_ID = "1f095662fbd7805da4d3cefe15d8ba9d"
-RAILWAY_URL = os.getenv("RAILWAY_URL", "http://127.0.0.1:5000")
+REPLIT_URL = os.getenv("REPLIT_URL", "https://your-repl-name.replit.app")
 
 GUEST_TEMPLATE = """
 <!DOCTYPE html>
@@ -68,13 +68,13 @@ def check_and_update_guests():
                 if not checkout:
                     continue
 
-                guest_url = f"{RAILWAY_URL}/guest/{urllib.parse.quote(guest_name)}/{created_key}"
+                guest_url = f"{REPLIT_URL}/guest/{urllib.parse.quote(guest_name)}/{created_key}"
                 qr_img_path = os.path.join(app.config['QR_FOLDER'], f"{guest_name}_{created_key}.png")
                 qrcode.make(guest_url).save(qr_img_path)
 
                 notion.pages.update(page["id"], properties={
                     "Welcome Page URL": {"url": guest_url},
-                    "QR Code URL": {"url": f"{RAILWAY_URL}/static/qrcodes/{guest_name}_{created_key}.png"}
+                    "QR Code URL": {"url": f"{REPLIT_URL}/static/qrcodes/{guest_name}_{created_key}.png"}
                 })
 
                 print(f"✅ Guest '{guest_name}' processed. Page: {guest_url}")
